@@ -1,5 +1,8 @@
 import datetime
+from os import environ
+
 import redis
+
 from flask import (
     Flask,
     Response,
@@ -11,7 +14,9 @@ from flask import (
 
 app = Flask(__name__)
 app.secret_key = "test"
-r = redis.StrictRedis("localhost", 6379, 0, charset="utf-8", decode_responses=True)
+REDIS_HOSTNAME = environ.get('REDIS_HOSTNAME', 'localhost')
+REDIS_PORT = environ.get('REDIS_PORT', 6379)
+r = redis.StrictRedis(REDIS_HOSTNAME, REDIS_PORT, 0, charset="utf-8", decode_responses=True)
 
 
 def event_stream():
@@ -19,7 +24,7 @@ def event_stream():
     pubsub.subscribe("chat")
     # TODO: handle client disconnection.
     for message in pubsub.listen():
-        yield "data: %s\n\n" % message["data"]
+        yield f"data: {message['data']}\n\n"
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -35,7 +40,7 @@ def post():
     message = request.form["message"]
     user = session.get("user", "anonymous")
     now = datetime.datetime.now().replace(microsecond=0).time()
-    r.publish("chat", "[%s] %s: %s" % (now.isoformat(), user, message))
+    r.publish("chat", f"[{now.isoformat()}] {user}: {message}")
     return Response(status=204)
 
 
