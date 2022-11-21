@@ -7,7 +7,8 @@ This is a simple example using Flask and Redis Pub/Sub for a realtime chat appli
 ## Running
 Run the follow command (you need Docker installed):
 
-`docker-compse run --build`
+docker build -t flask-redis-realtime-chat .
+docker run -it flask-redis-realtime-chat
 
 Go to `http://localhost:5000`
 
